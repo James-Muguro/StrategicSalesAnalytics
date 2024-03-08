@@ -156,5 +156,58 @@ plt.xlabel('Total Units Sold')
 plt.ylabel('Product Name')
 plt.show()
 
- 
+# Key Analytics
+# 1. Descriptive Statistics:
+
+# Display descriptive statistics for numerical columns
+descriptive_stats = df.describe()
+
+# Display descriptive statistics for categorical columns
+categorical_stats = df.describe(include='object')
+
+# Print results
+print("Descriptive Statistics for Numerical Columns:")
+print(descriptive_stats)
+
+print("\nDescriptive Statistics for Categorical Columns:")
+print(categorical_stats)
+
+
+# 2. Correlation Analysis:
+
+# Calculate correlation between UnitCost and UnitPrice
+correlation = df['UnitCost'].corr(df['UnitPrice'])
+print(f"The correlation between UnitCost and UnitPrice is {correlation:.2f}")
+
+# Calculate correlation between Device and Units sold
+
+# Group by Device and calculate average units sold
+device_units = df.groupby('Device')['Units'].mean().reset_index()
+
+# Visualization using point plot
+plt.figure(figsize=(12, 6))
+sns.pointplot(x='Device', y='Units', data=device_units, color='blue', join=False)
+plt.title('Average Units Sold by Device')
+plt.xlabel('Device')
+plt.ylabel('Average Units Sold')
+plt.show()
+
+
+# 3. Time Series Analysis:
+
+# Set the 'Date' column as the index for time series analysis
+df_time_series = df.set_index('Date')
+
+# Resample data by a specific time frequency (e.g., monthly)
+df_monthly = df_time_series.resample('M').sum()
+
+# Visualization of Time Series (e.g., Total Units Sold over time)
+plt.figure(figsize=(14, 6))
+plt.plot(df_monthly['Units'], marker='o', linestyle='-', color='b')
+plt.title('Monthly Total Units Sold Over Time')
+plt.xlabel('Date')
+plt.ylabel('Total Units Sold')
+plt.grid(True)
+plt.show()
+
 
