@@ -44,3 +44,10 @@ display(fileselect)
 
 df.head()
 
+# Understanding the data
+df.dtypes
+df.shape
+
+
+
+
