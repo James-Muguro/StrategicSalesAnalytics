@@ -44,10 +44,19 @@ display(fileselect)
 
 df.head()
 
+
 # Understanding the data
 df.dtypes
 df.shape
 
 
+# Data Cleaning
+# Missing Values
+# Drop rows with missing values
+df_cleaned = df.dropna()
 
+# Outliers
+# Remove outliers in 'Units' column using z-score
+from scipy.stats import zscore
+df_cleaned = df[(np.abs(zscore(df['Units'])) < 3)]
 
