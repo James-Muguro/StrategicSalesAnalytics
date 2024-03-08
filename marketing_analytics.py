@@ -60,3 +60,101 @@ df_cleaned = df.dropna()
 from scipy.stats import zscore
 df_cleaned = df[(np.abs(zscore(df['Units'])) < 3)]
 
+
+# Data Analysis
+# Key Metrics
+
+# 1. TrafficChannel Performance
+
+# Group by TrafficChannel and calculate metrics
+traffic_channel_metrics = df_cleaned.groupby('TrafficChannel')[['Units', 'UnitPrice']].agg({'Units': 'sum', 'UnitPrice': 'mean'}).reset_index()
+
+# Visualization
+plt.figure(figsize=(12, 6))
+sns.barplot(x='TrafficChannel', y='Units', data=traffic_channel_metrics, palette='viridis')
+plt.title('TrafficChannel Performance - Total Units Sold')
+plt.xlabel('TrafficChannel')
+plt.ylabel('Total Units Sold')
+plt.show()
+
+# 2. Segement Preference:
+
+# Group by Segement and calculate metrics
+segement_metrics = df_cleaned.groupby('Segement')[['Units', 'UnitPrice']].agg({'Units': 'sum', 'UnitPrice': 'mean'}).reset_index()
+
+# Visualization
+plt.figure(figsize=(12, 6))
+sns.barplot(x='Segement', y='Units', data=segement_metrics, palette='muted')
+plt.title('Segement Preference - Total Units Sold')
+plt.xlabel('Segement')
+plt.ylabel('Total Units Sold')
+plt.show()
+
+# 3. Device Performance:
+
+# Group by Device and calculate metrics
+device_metrics = df.groupby('Device')[['Units', 'UnitPrice']].agg({'Units': 'sum', 'UnitPrice': 'mean'}).reset_index()
+
+# Visualization
+plt.figure(figsize=(12, 6))
+sns.barplot(x='Device', y='Units', data=device_metrics, palette='pastel')
+plt.title('Device Performance - Total Units Sold')
+plt.xlabel('Device')
+plt.ylabel('Total Units Sold')
+plt.show()
+
+
+# Lets Map the states and add a new column called region 
+
+# Define a dictionary that maps states to regions
+state_to_region = {
+    'Alabama': 'South', 'Alaska': 'West', 'Arizona': 'West', 'Arkansas': 'South', 
+    'California': 'West', 'Colorado': 'West', 'Connecticut': 'Northeast', 
+    'Delaware': 'South', 'Florida': 'South', 'Georgia': 'South', 'Hawaii': 'West', 
+    'Idaho': 'West', 'Illinois': 'Midwest', 'Indiana': 'Midwest', 'Iowa': 'Midwest', 
+    'Kansas': 'Midwest', 'Kentucky': 'South', 'Louisiana': 'South', 'Maine': 'Northeast', 
+    'Maryland': 'South', 'Massachusetts': 'Northeast', 'Michigan': 'Midwest', 
+    'Minnesota': 'Midwest', 'Mississippi': 'South', 'Missouri': 'Midwest', 
+    'Montana': 'West', 'Nebraska': 'Midwest', 'Nevada': 'West', 'New Hampshire': 'Northeast', 
+    'New Jersey': 'Northeast', 'New Mexico': 'West', 'New York': 'Northeast', 
+    'North Carolina': 'South', 'North Dakota': 'Midwest', 'Ohio': 'Midwest', 
+    'Oklahoma': 'South', 'Oregon': 'West', 'Pennsylvania': 'Northeast', 
+    'Rhode Island': 'Northeast', 'South Carolina': 'South', 'South Dakota': 'Midwest', 
+    'Tennessee': 'South', 'Texas': 'South', 'Utah': 'West', 'Vermont': 'Northeast', 
+    'Virginia': 'South', 'Washington': 'West', 'West Virginia': 'South', 
+    'Wisconsin': 'Midwest', 'Wyoming': 'West'
+}
+
+# Create a new column 'Region' in the dataframe
+df['Region'] = df['State'].map(state_to_region)
+
+
+# 4. Region Performance:
+
+# Group by Region and calculate metrics
+region_metrics = df.groupby('Region')[['Units', 'UnitPrice']].agg({'Units': 'sum', 'UnitPrice': 'mean'}).reset_index()
+
+# Visualization
+plt.figure(figsize=(12, 6))
+sns.barplot(x='Region', y='Units', data=region_metrics, palette='deep')
+plt.title('Region Performance - Total Units Sold')
+plt.xlabel('Region')
+plt.ylabel('Total Units Sold')
+plt.show()
+
+# 5. Product Preference:
+
+# Group by ProductName and calculate metrics
+product_metrics = df.groupby('ProductName')[['Units', 'UnitPrice']].agg({'Units': 'sum', 'UnitPrice': 'mean'}).reset_index()
+
+# Visualization (top 10 products by units sold)
+top_products = product_metrics.nlargest(10, 'Units')
+plt.figure(figsize=(12, 6))
+sns.barplot(x='Units', y='ProductName', data=top_products, palette='colorblind')
+plt.title('Top 10 Product Preferences - Total Units Sold')
+plt.xlabel('Total Units Sold')
+plt.ylabel('Product Name')
+plt.show()
+
+ 
+
