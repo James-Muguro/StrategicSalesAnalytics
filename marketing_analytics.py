@@ -22,3 +22,25 @@ from sklearn.preprocessing import StandardScaler
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import mean_squared_error, r2_score
+
+
+# Loading the dataset
+def select_file(b):
+    clear_output()
+    root = Tk()
+    root.withdraw()  # Hide the main window
+    root.call('wm', 'attributes', '.', '-topmost', True)  # Raise the root to the top of all windows
+    b.files = filedialog.askopenfilename(multiple=False)  # List of selected files
+    path = b.files
+    global df
+    df = pd.read_excel(path)
+    print(f'Loaded dataframe from {path}')
+    display(df.head())
+
+fileselect = widgets.Button(description="File select")
+fileselect.on_click(select_file)
+
+display(fileselect)
+
+df.head()
+
