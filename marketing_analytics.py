@@ -273,4 +273,142 @@ def get_similar_items(item, n=5):
 print(get_similar_items('Maximus UM-43'))
 
 
+# Machine Learning Models
+# 1. Ensemble Methods (Gradient Boosting - XGBoost):
+
+
+# Select features and target variable
+X = df[['CustomerID', 'CampaignID', 'Units', 'UnitCost', 'UnitPrice']]
+y = df['Units']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create an XGBoost model
+xg_reg = xgb.XGBRegressor(objective ='reg:squarederror', colsample_bytree = 0.3, learning_rate = 0.1,
+                          max_depth = 5, alpha = 10, n_estimators = 100)
+
+# Fit the model to the training set
+xg_reg.fit(X_train, y_train)
+
+# Predictions on the test set
+y_pred = xg_reg.predict(X_test)
+
+# Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+print(f'Mean Squared Error: {mse}')
+
+# Print feature importance
+feature_importance = xg_reg.feature_importances_
+for i, j in enumerate(X.columns):
+    print(f'Feature Importance of {j}: {feature_importance[i]}')
+
+# Print some predictions
+print("Some predictions:")
+for i in range(10):
+    print(f'Prediction: {y_pred[i]}, Actual: {y_test.iloc[i]}')
+
+
+
+# 2. Deep Learning (Long Short-Term Memory - LSTM):
+
+# Select the target variable
+data = df[['Units']].values
+
+# Normalize the data
+scaler = MinMaxScaler(feature_range=(0, 1))
+scaled_data = scaler.fit_transform(data)
+
+# Create sequences for LSTM
+def create_sequences(data, n_steps):
+    X, y = [], []
+    for i in range(len(data) - n_steps):
+        X.append(data[i:i+n_steps, 0])
+        y.append(data[i+n_steps, 0])
+    return np.array(X).reshape(-1, n_steps, 1), np.array(y)
+
+# Choose the number of time steps
+n_steps = 10
+
+# Create sequences
+X, y = create_sequences(scaled_data, n_steps)
+
+# Convert data to PyTorch tensors
+X_tensor = torch.tensor(X, dtype=torch.float32)
+y_tensor = torch.tensor(y, dtype=torch.float32)
+
+# Define the LSTM model
+class LSTMModel(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
+        super(LSTMModel, self).__init__()
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x):
+        out, _ = self.lstm(x)
+        out = self.fc(out[:, -1, :])
+        return out
+
+# Hyperparameters
+input_size = 1
+hidden_size = 50
+num_layers = 2
+output_size = 1
+
+# Instantiate the model
+model = LSTMModel(input_size, hidden_size, num_layers, output_size)
+
+# Loss function and optimizer
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Define the batch size
+batch_size = 32
+
+# Create data loaders
+train_data = TensorDataset(X_tensor, y_tensor)
+train_loader = DataLoader(train_data, shuffle=False, batch_size=batch_size)
+
+# Training the model
+num_epochs = 10
+for epoch in range(num_epochs):
+    for inputs, labels in train_loader:
+        inputs = Variable(inputs)
+        labels = Variable(labels)
+
+        # Forward pass
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+
+        # Backward pass and optimization
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+    print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item()}')
+
+# Convert the model to evaluation mode
+model.eval()
+
+# Predictions on the test set
+with torch.no_grad():
+    test_inputs = Variable(X_tensor)
+    predictions = model(test_inputs)
+
+# Convert predictions to numpy array
+predictions = predictions.numpy()
+
+# Inverse transform the predictions to get back the original scale
+predictions = scaler.inverse_transform(predictions)
+
+# Evaluate the model (MSE for example)
+mse = mean_squared_error(data[n_steps:], predictions)
+print(f'Mean Squared Error: {mse}')
+
+# Print some predictions
+print("Some predictions:")
+for i in range(5):
+    print(f'Prediction: {predictions[i]}, Actual: {data[n_steps+i]}')
+
+
 
