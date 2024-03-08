@@ -211,3 +211,66 @@ plt.grid(True)
 plt.show()
 
 
+# Advanced Analytics
+# 1. Customer Segmentation
+
+# Select relevant features for clustering
+features_for_clustering = df[['Units', 'UnitCost', 'UnitPrice']]
+
+# Standardize the features
+scaler = StandardScaler()
+features_scaled = scaler.fit_transform(features_for_clustering)
+
+# Determine the optimal number of clusters using the elbow method
+inertia = []
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters=i, random_state=42)
+    kmeans.fit(features_scaled)
+    inertia.append(kmeans.inertia_)
+
+# Visualization of the elbow method
+plt.figure(figsize=(8, 6))
+plt.plot(range(1, 11), inertia, marker='o')
+plt.title('Elbow Method for Optimal K')
+plt.xlabel('Number of Clusters (K)')
+plt.ylabel('Inertia')
+plt.show()
+
+# Choose the optimal K based on the elbow method (e.g., K=3)
+optimal_k = 3
+
+# Perform K-Means clustering
+kmeans = KMeans(n_clusters=optimal_k, random_state=42)
+df['Cluster'] = kmeans.fit_predict(features_scaled)
+
+# Visualize customer segmentation
+plt.figure(figsize=(12, 8))
+sns.scatterplot(x='UnitCost', y='UnitPrice', hue='Cluster', data=df, palette='viridis', s=100)
+plt.title('Customer Segmentation based on UnitCost and UnitPrice')
+plt.xlabel('UnitCost')
+plt.ylabel('UnitPrice')
+plt.show()
+
+
+# 2. Item-Item Collaborative Filtering:
+
+
+# Create a binary transaction dataset for collaborative filtering
+basket = df.groupby(['CustomerID', 'ProductName'])['Units'].sum().unstack().reset_index().fillna(0).set_index('CustomerID')
+
+# Convert quantities to binary values (1 if purchased, 0 otherwise)
+basket[basket > 1] = 1
+
+# Calculate the item-item similarity matrix
+item_similarities = cosine_similarity(basket.T)
+item_similarities = pd.DataFrame(item_similarities, index=basket.columns, columns=basket.columns)
+
+# Function to get the most similar items
+def get_similar_items(item, n=5):
+    return item_similarities[item].sort_values(ascending=False)[:n]
+
+# Test the function with an item
+print(get_similar_items('Maximus UM-43'))
+
+
+
