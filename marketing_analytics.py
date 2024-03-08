@@ -412,3 +412,61 @@ for i in range(5):
 
 
 
+# Natural Language Processing
+# 1. Topic Modeling with LDA:
+
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
+
+from gensim import corpora, models
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+import string
+
+
+# Concatenate text columns into a single column
+df['text_combined'] = df['ProductName'] + ' ' + df['Category'] + ' ' + df['Segement']
+
+# Tokenize and preprocess the text
+stop_words = set(stopwords.words('english'))
+punctuation = set(string.punctuation)
+
+def preprocess_text(text):
+    tokens = word_tokenize(text.lower())
+    tokens = [token for token in tokens if token not in stop_words and token not in punctuation]
+    return tokens
+
+df['tokens'] = df['text_combined'].apply(preprocess_text)
+
+# Create a dictionary and a corpus
+dictionary = corpora.Dictionary(df['tokens'])
+corpus = [dictionary.doc2bow(tokens) for tokens in df['tokens']]
+
+# Build the LDA model
+lda_model = models.LdaModel(corpus, num_topics=5, id2word=dictionary, passes=15)
+
+# Print the topics
+topics = lda_model.print_topics(num_words=5)
+for topic in topics:
+    print(topic)
+
+
+# 2. Sentiment Analysis:
+
+nltk.download('vader_lexicon')
+from nltk.sentiment import SentimentIntensityAnalyzer
+
+# Concatenate text columns into a single column
+df['text_combine'] = df['ProductName'] + ' ' + df['Category'] + ' ' + df['Segement']
+
+# Calculate sentiment scores using SentimentIntensityAnalyzer
+sia = SentimentIntensityAnalyzer()
+df['sentiment_score'] = df['text_combine'].apply(lambda x: sia.polarity_scores(x)['compound'])
+
+# Categorize sentiment into positive, negative, or neutral
+df['sentiment_category'] = df['sentiment_score'].apply(lambda x: 'positive' if x > 0 else 'negative' if x < 0 else 'neutral')
+
+# Display the results
+print(df[['text_combine', 'sentiment_score', 'sentiment_category']])
+
